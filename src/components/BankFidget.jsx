@@ -22,10 +22,7 @@ function BankFidget({
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountType, setNewAccountType] = useState('checking');
   const [newAccountBalance, setNewAccountBalance] = useState('');
-  // 每个账户独立控制展开/收起
   const [expandedAccounts, setExpandedAccounts] = useState({});
-
-  const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -83,7 +80,7 @@ function BankFidget({
     return (account.balance || 0) + transactionTotal;
   };
 
-  // ✅ 修正：总余额 = 所有账户的当前余额之和
+  // ✅ 只保留这一个 totalBalance
   const totalBalance = accounts.reduce((sum, acc) => sum + getAccountBalance(acc), 0);
 
   // 切换账户展开/收起
@@ -101,236 +98,63 @@ function BankFidget({
     investment: '📈',
     loan: '💰'
   };
-
   return (
-    <div 
-      className="bank-fidget" 
-      style={{ 
-        borderColor: bank.color,
-        '--bank-color': bank.color 
-      }}
-    >
-      {/* Header */}
-      <div className="bank-header" style={{ backgroundColor: bank.color }}>
-        <div className="bank-title">
-          <span className="bank-icon">{bank.icon || '🏦'}</span>
-          <h2>{bank.name}</h2>
-        </div>
-        <div className="bank-actions">
-          <button 
-            className="color-btn"
-            onClick={() => setShowColorPicker(!showColorPicker)}
-            title="Change color"
-          >
-            🎨
-          </button>
-          <button 
-            className="delete-bank-btn"
-            onClick={() => {
-              if (window.confirm(`Delete ${bank.name} and all its accounts?`)) {
-                onDeleteBank && onDeleteBank(bank.id);
-              }
-            }}
-            title="Delete bank"
-          >
-            🗑️
-          </button>
-          <span className="bank-balance">${totalBalance.toFixed(2)}</span>
-        </div>
+    <div className="bank-fidget">
+      <div className="bank-header" style={{borderColor: bank.color}}>
+        <h3>{bank.name}</h3>
+        <div className="bank-balance">Total: ${totalBalance.toFixed(2)}</div>
       </div>
 
-      {/* Color Picker */}
-      {showColorPicker && (
-        <div className="color-picker">
-          <input
-            type="color"
-            value={bank.color}
-            onChange={(e) => onColorChange && onColorChange(bank.id, e.target.value)}
-          />
-          <button onClick={() => setShowColorPicker(false)}>✓</button>
-        </div>
+      <div className="accounts">
+        {accounts.map(acc => (
+          <div key={acc.id} className="account">
+            <div className="account-summary" onClick={() => toggleAccount(acc.id)}>
+              <span className="account-name">{acc.name} ({accountTypes[acc.type] || acc.type})</span>
+              <span className="account-balance">${getAccountBalance(acc).toFixed(2)}</span>
+            </div>
+            {expandedAccounts[acc.id] && (
+              <div className="account-details">
+                <ul>
+                  {getAccountTransactions(acc.id).map(tx => (
+                    <li key={tx.id}>
+                      {tx.date ? new Date(tx.date).toLocaleDateString() : ''} {tx.description} {tx.category} ${tx.amount}
+                      <button onClick={() => onDeleteTransaction && onDeleteTransaction(tx.id)}>Delete</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="actions">
+        <button onClick={() => setIsAdding(v => !v)}>{isAdding ? 'Cancel' : 'Add Transaction'}</button>
+        <button onClick={() => setShowAddAccount(v => !v)}>{showAddAccount ? 'Cancel' : 'Add Account'}</button>
+      </div>
+
+      {isAdding && (
+        <form className="transaction-form" onSubmit={handleSubmit}>
+          <select value={selectedAccount} onChange={e => setSelectedAccount(e.target.value)}>
+            <option value="">Select account</option>
+            {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+          <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
+          <input value={category} onChange={e => setCategory(e.target.value)} placeholder="Category" />
+          <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" />
+          <button type="submit">Add</button>
+        </form>
       )}
 
-      {/* Accounts Section */}
-      <div className="accounts-section">
-        <div className="accounts-header">
-          <h3>Accounts</h3>
-          <button 
-            className="add-account-btn"
-            onClick={() => setShowAddAccount(!showAddAccount)}
-          >
-            + Add Account
-          </button>
-        </div>
-
-        {showAddAccount && (
-          <form className="add-account-form" onSubmit={handleAddAccount}>
-            <input
-              type="text"
-              placeholder="Account name (e.g., Main Checking)"
-              value={newAccountName}
-              onChange={(e) => setNewAccountName(e.target.value)}
-              required
-            />
-            <select
-              value={newAccountType}
-              onChange={(e) => setNewAccountType(e.target.value)}
-            >
-              <option value="checking">💳 Checking</option>
-              <option value="savings">🏦 Savings</option>
-              <option value="credit">💳 Credit Card</option>
-              <option value="investment">📈 Investment</option>
-              <option value="loan">💰 Loan</option>
-            </select>
-            <input
-              type="number"
-              placeholder="Initial balance (optional)"
-              value={newAccountBalance}
-              onChange={(e) => setNewAccountBalance(e.target.value)}
-              step="0.01"
-            />
-            <div className="form-actions">
-              <button type="submit">Add Account</button>
-              <button type="button" onClick={() => setShowAddAccount(false)}>Cancel</button>
-            </div>
-          </form>
-        )}
-
-        <div className="accounts-list">
-          {accounts.length === 0 ? (
-            <p className="empty-message">No accounts yet</p>
-          ) : (
-            accounts.map(account => {
-              const currentBalance = getAccountBalance(account);
-              const accountTransactions = getAccountTransactions(account.id);
-              const isExpanded = expandedAccounts[account.id] || false;
-              
-              return (
-                <div key={account.id} className="account-wrapper">
-                  {/* Account Item - Click to expand */}
-                  <div 
-                    className="account-item"
-                    onClick={() => toggleAccount(account.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="account-info">
-                      <span className="account-type">
-                        {accountTypesEmoji[account.type] || '💳'} {accountTypes[account.type] || account.type}
-                      </span>
-                      <span className="account-name">{account.name}</span>
-                      <span className="account-balance">${currentBalance.toFixed(2)}</span>
-                      {accountTransactions.length > 0 && (
-                        <span className="transaction-count">({accountTransactions.length} txns)</span>
-                      )}
-                      <span className="expand-icon">
-                        {isExpanded ? '▼' : '▶'}
-                      </span>
-                    </div>
-                    <button 
-                      className="delete-account-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm(`Delete account "${account.name}"?`)) {
-                          onDeleteAccount && onDeleteAccount(account.id);
-                        }
-                      }}
-                      title="Delete account"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  {/* Account Transactions - Only show if expanded */}
-                  {isExpanded && (
-                    <div className="account-transactions">
-                      {accountTransactions.length === 0 ? (
-                        <p className="empty-message">No transactions for this account</p>
-                      ) : (
-                        accountTransactions.map(t => (
-                          <div key={t.id} className="transaction-item">
-                            <div className="transaction-info">
-                              <span className="transaction-category">{t.category}</span>
-                              <span className="transaction-desc">{t.description || 'No description'}</span>
-                              <span className="transaction-date">
-                                {new Date(t.date).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <div className="transaction-amount">
-                              <span>${(t.amount || 0).toFixed(2)}</span>
-                              <button 
-                                className="delete-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteTransaction && onDeleteTransaction(t.id);
-                                }}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-
-      {/* Add Transaction - Global */}
-      {isAdding ? (
-        <form className="add-transaction-form" onSubmit={handleSubmit}>
-          <select
-            value={selectedAccount}
-            onChange={(e) => setSelectedAccount(e.target.value)}
-            required
-          >
-            <option value="">Select Account</option>
-            {accounts.map(acc => {
-              const balance = getAccountBalance(acc);
-              return (
-                <option key={acc.id} value={acc.id}>
-                  {acc.name} (${balance.toFixed(2)})
-                </option>
-              );
-            })}
+      {showAddAccount && (
+        <form className="add-account-form" onSubmit={handleAddAccount}>
+          <input value={newAccountName} onChange={e => setNewAccountName(e.target.value)} placeholder="Account name" />
+          <select value={newAccountType} onChange={e => setNewAccountType(e.target.value)}>
+            {Object.keys(accountTypes).map(k => <option key={k} value={k}>{accountTypes[k]}</option>)}
           </select>
-          <input
-            type="number"
-            placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-            step="0.01"
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <div className="form-actions">
-            <button type="submit">Add</button>
-            <button type="button" onClick={() => setIsAdding(false)}>Cancel</button>
-          </div>
+          <input value={newAccountBalance} onChange={e => setNewAccountBalance(e.target.value)} placeholder="Starting balance" />
+          <button type="submit">Create</button>
         </form>
-      ) : (
-        <button 
-          className="add-transaction-btn"
-          onClick={() => setIsAdding(true)}
-          disabled={accounts.length === 0}
-        >
-          + Add Transaction
-        </button>
       )}
     </div>
   );
