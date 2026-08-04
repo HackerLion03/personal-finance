@@ -1,0 +1,226 @@
+.bank-fidget {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 3px solid;
+  overflow: hidden;
+  margin: 16px;
+  min-width: 300px;
+  flex: 1;
+  max-width: 400px;
+  transition: transform 0.2s;
+}
+
+.bank-fidget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bank-header {
+  padding: 16px 20px;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bank-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bank-icon {
+  font-size: 24px;
+}
+
+.bank-title h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.bank-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.color-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.color-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.bank-balance {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.color-picker {
+  padding: 12px 20px;
+  background: #f8f9fa;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.color-picker input[type="color"] {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.color-picker button {
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+
+.transactions-list {
+  padding: 12px 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.empty-message {
+  color: #999;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transaction-category {
+  font-weight: 500;
+  color: #333;
+}
+
+.transaction-desc {
+  font-size: 14px;
+  color: #666;
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.transaction-amount {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.transaction-amount span {
+  font-weight: 600;
+  color: #28a745;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover {
+  background: #fee;
+}
+
+.add-transaction-form {
+  padding: 16px 20px;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-transaction-form input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.form-actions button[type="submit"] {
+  background: #28a745;
+  color: white;
+}
+
+.form-actions button[type="button"] {
+  background: #dc3545;
+  color: white;
+}
+
+.add-transaction-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #f8f9fa;
+  cursor: pointer;
+  font-size: 14px;
+  color: #007bff;
+  transition: background 0.2s;
+  border-top: 1px solid #eee;
+}
+
+.add-transaction-btn:hover {
+  background: #e9ecef;
+}
+
+/* Responsive layout */
+.bank-fidgets-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px;
+  gap: 20px;
+}
