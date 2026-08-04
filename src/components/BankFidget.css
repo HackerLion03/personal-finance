@@ -706,35 +706,29 @@
 /* ===== 手机端响应式优化 ===== */
 @media (max-width: 768px) {
   .bank-fidget {
-    min-width: auto; /* 移除最小宽度限制 */
-    width: 100%; /* 占满容器宽度 */
-    max-width: 100%; /* 允许全宽 */
-    margin: 12px 0; /* 上下间距，左右无边距 */
+    min-width: 280px; /* 保留最小宽度 */
+    max-width: 100%; /* 允许占满但不超过容器 */
+    flex: 1 1 280px; /* 允许伸缩，基础宽度280px */
+    margin: 12px;
     border-radius: 20px;
   }
   
   .bank-header {
-    padding: 16px 16px;
-    min-height: 65px;
-    flex-wrap: wrap;
-    gap: 8px;
+    padding: 16px 18px;
+    min-height: 70px;
   }
   
   .bank-title h2 {
-    font-size: 17px;
-  }
-  
-  .bank-icon {
-    font-size: 24px;
+    font-size: 18px;
   }
   
   .bank-balance {
-    font-size: 15px;
-    padding: 3px 10px;
+    font-size: 16px;
+    padding: 3px 12px;
   }
   
-  .bank-actions {
-    gap: 4px;
+  .bank-icon {
+    font-size: 26px;
   }
   
   .color-btn,
@@ -744,35 +738,12 @@
     font-size: 14px;
   }
   
-  /* Accounts Section */
   .accounts-section {
-    padding: 12px 14px 10px;
+    padding: 12px 16px 10px;
   }
   
-  .accounts-header h3 {
-    font-size: 12px;
-  }
-  
-  .add-account-btn {
-    font-size: 11px;
-    padding: 4px 12px;
-  }
-  
-  /* Account Items */
   .account-item {
-    padding: 8px 10px;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  
-  .account-info {
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  
-  .account-type {
-    font-size: 10px;
-    padding: 2px 8px;
+    padding: 8px 12px;
   }
   
   .account-name {
@@ -783,41 +754,12 @@
     font-size: 13px;
   }
   
-  .transaction-count {
-    font-size: 10px;
-    padding: 1px 6px;
-  }
-  
-  .expand-icon {
-    font-size: 10px;
-  }
-  
-  .delete-account-btn {
-    font-size: 12px;
-    padding: 2px 6px;
-  }
-  
-  /* Account Transactions */
-  .account-transactions {
-    padding: 6px 10px 6px 14px;
-  }
-  
-  .account-transactions .transaction-item {
-    padding: 6px 6px;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  
   .transaction-category {
     font-size: 13px;
   }
   
   .transaction-desc {
     font-size: 12px;
-  }
-  
-  .transaction-date {
-    font-size: 10px;
   }
   
   .transaction-amount span {
@@ -825,137 +767,20 @@
   }
   
   .delete-btn {
-    font-size: 12px;
-    padding: 2px 6px;
-    opacity: 1; /* 手机上始终显示删除按钮 */
+    opacity: 1; /* 手机上始终显示 */
   }
   
   .transactions-list {
     max-height: 200px;
-    padding: 8px 12px;
+    padding: 10px 16px;
   }
   
-  /* Add Transaction Form */
   .add-transaction-form {
-    padding: 12px 14px;
-    gap: 8px;
-  }
-  
-  .add-transaction-form select,
-  .add-transaction-form input {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .form-actions button {
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 12px 16px;
   }
   
   .add-transaction-btn {
     padding: 12px;
     font-size: 13px;
-  }
-  
-  /* Color Picker */
-  .color-picker {
-    padding: 12px 16px;
-  }
-  
-  .color-picker input[type="color"] {
-    width: 36px;
-    height: 36px;
-  }
-  
-  .color-picker button {
-    padding: 6px 14px;
-    font-size: 13px;
-  }
-  
-  /* Add Account Form */
-  .add-account-form input,
-  .add-account-form select {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  /* Toggle Button */
-  .toggle-transactions-btn {
-    padding: 10px;
-    font-size: 12px;
-  }
-  
-  .transaction-count-badge {
-    font-size: 10px;
-    padding: 1px 8px;
-  }
-}
-
-/* ===== 小屏手机优化 (宽度 < 400px) ===== */
-@media (max-width: 400px) {
-  .bank-fidget {
-    border-radius: 16px;
-    margin: 8px 0;
-  }
-  
-  .bank-header {
-    padding: 12px 12px;
-    min-height: 55px;
-  }
-  
-  .bank-title {
-    gap: 8px;
-  }
-  
-  .bank-title h2 {
-    font-size: 15px;
-  }
-  
-  .bank-icon {
-    font-size: 20px;
-  }
-  
-  .bank-balance {
-    font-size: 13px;
-    padding: 2px 8px;
-  }
-  
-  .color-btn,
-  .delete-bank-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 12px;
-  }
-  
-  .accounts-section {
-    padding: 10px 10px 8px;
-  }
-  
-  .account-item {
-    padding: 6px 8px;
-  }
-  
-  .account-name {
-    font-size: 11px;
-  }
-  
-  .account-balance {
-    font-size: 12px;
-  }
-  
-  .account-transactions {
-    padding: 4px 8px 4px 10px;
-  }
-  
-  .transaction-category {
-    font-size: 12px;
-  }
-  
-  .transaction-desc {
-    font-size: 11px;
-  }
-  
-  .transaction-amount span {
-    font-size: 12px;
   }
 }

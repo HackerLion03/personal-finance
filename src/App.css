@@ -33,18 +33,7 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* Bank Fidgets Container */
-.bank-fidgets-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 24px;
-  gap: 24px;
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
-/* ===== Bank Page Header ===== */
+/* ===== Bank Page ===== */
 .bank-page {
   padding: 20px 40px;
   max-width: 1440px;
@@ -107,103 +96,83 @@ body {
   box-shadow: 0 6px 25px rgba(220, 53, 69, 0.4);
 }
 
-@media (max-width: 768px) {
-/* ===== Bank Page 手机端优化 ===== */
-.bank-page {
-  padding: 16px 12px; /* 减少左右内边距 */
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
-.bank-page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.bank-page-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: #333;
-  margin: 0;
-}
-
-.bank-actions-header {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 /* ===== Bank Fidgets Container ===== */
 .bank-fidgets-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  padding: 0; /* 移除内边距 */
-  gap: 16px;
+  justify-content: flex-start;
+  padding: 0;
+  gap: 20px;
   max-width: 1440px;
   margin: 0 auto;
 }
 
-/* ===== 手机端响应式 ===== */
+/* ============================================ */
+/* ===== 桌面端默认样式 (已在上方定义) ===== */
+/* ============================================ */
+
+/* ===== 平板端 (768px 以下) ===== */
 @media (max-width: 768px) {
   .bank-page {
-    padding: 12px 8px;
+    padding: 16px 16px;
   }
-  
+
   .bank-page-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 16px;
   }
-  
+
   .bank-page-header h1 {
-    font-size: 20px;
+    font-size: 22px;
     text-align: center;
   }
-  
+
   .bank-actions-header {
     flex-direction: row;
     justify-content: center;
+    gap: 10px;
   }
-  
+
   .bank-actions-header button {
     flex: 1;
     text-align: center;
     font-size: 13px;
-    padding: 8px 12px;
+    padding: 8px 16px;
     min-width: 0;
   }
-  
+
   .bank-fidgets-container {
-    gap: 12px;
+    justify-content: center;
+    gap: 16px;
     padding: 0;
   }
 }
 
+/* ===== 小屏手机 (400px 以下) ===== */
 @media (max-width: 400px) {
   .bank-page {
-    padding: 8px 4px;
+    padding: 12px 8px;
   }
-  
+
   .bank-page-header h1 {
     font-size: 18px;
   }
-  
+
   .bank-actions-header {
     flex-direction: column;
-  }
-  
-  .bank-actions-header button {
-    font-size: 12px;
-    padding: 8px;
-  }
-  
-  .bank-fidgets-container {
     gap: 8px;
   }
-}
+
+  .bank-actions-header button {
+    font-size: 12px;
+    padding: 8px 12px;
+    width: 100%;
+  }
+
+  .bank-fidgets-container {
+    gap: 12px;
+    padding: 0;
+  }
 }
