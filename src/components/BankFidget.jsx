@@ -3,8 +3,8 @@ import './BankFidget.css';
 
 function BankFidget({ 
   bank, 
-  accounts, 
-  transactions, 
+  accounts = [], 
+  transactions = [], 
   onAddTransaction, 
   onDeleteTransaction, 
   onColorChange,
@@ -21,21 +21,23 @@ function BankFidget({
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
   const [newAccountType, setNewAccountType] = useState('checking');
-  const [newAccountBalance, setNewAccountBalance] = useState(''); // 初始余额
-  const [showTransactions, setShowTransactions] = useState(false); // 交易隐藏
+  const [newAccountBalance, setNewAccountBalance] = useState('');
+  const [showTransactions, setShowTransactions] = useState(false);
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  const totalBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAddTransaction({
-      bankId: bank.id,
-      accountId: parseInt(selectedAccount),
-      amount: parseFloat(amount),
-      category,
-      description,
-      date: new Date()
-    });
+    if (onAddTransaction) {
+      onAddTransaction({
+        bankId: bank.id,
+        accountId: parseInt(selectedAccount),
+        amount: parseFloat(amount),
+        category,
+        description,
+        date: new Date()
+      });
+    }
     setAmount('');
     setCategory('');
     setDescription('');
@@ -45,7 +47,7 @@ function BankFidget({
 
   const handleAddAccount = (e) => {
     e.preventDefault();
-    if (newAccountName.trim()) {
+    if (newAccountName.trim() && onAddAccount) {
       onAddAccount({
         bankId: bank.id,
         name: newAccountName,
@@ -68,11 +70,10 @@ function BankFidget({
     loan: '💰 Loan'
   };
 
-  // 计算账户余额（初始余额 + 交易）
   const getAccountBalance = (account) => {
     const accountTransactions = transactions.filter(t => t.accountId === account.id);
-    const transactionTotal = accountTransactions.reduce((sum, t) => sum + t.amount, 0);
-    return account.balance + transactionTotal;
+    const transactionTotal = accountTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+    return (account.balance || 0) + transactionTotal;
   };
 
   return (
@@ -83,7 +84,7 @@ function BankFidget({
         '--bank-color': bank.color 
       }}
     >
-      {/* Bank Header */}
+      {/* Header */}
       <div className="bank-header" style={{ backgroundColor: bank.color }}>
         <div className="bank-title">
           <span className="bank-icon">{bank.icon || '🏦'}</span>
@@ -101,7 +102,7 @@ function BankFidget({
             className="delete-bank-btn"
             onClick={() => {
               if (window.confirm(`Delete ${bank.name} and all its accounts?`)) {
-                onDeleteBank(bank.id);
+                onDeleteBank && onDeleteBank(bank.id);
               }
             }}
             title="Delete bank"
@@ -118,7 +119,7 @@ function BankFidget({
           <input
             type="color"
             value={bank.color}
-            onChange={(e) => onColorChange(bank.id, e.target.value)}
+            onChange={(e) => onColorChange && onColorChange(bank.id, e.target.value)}
           />
           <button onClick={() => setShowColorPicker(false)}>✓</button>
         </div>
@@ -191,7 +192,7 @@ function BankFidget({
                     className="delete-account-btn"
                     onClick={() => {
                       if (window.confirm(`Delete account "${account.name}"?`)) {
-                        onDeleteAccount(account.id);
+                        onDeleteAccount && onDeleteAccount(account.id);
                       }
                     }}
                     title="Delete account"
@@ -216,7 +217,7 @@ function BankFidget({
         </span>
       </button>
 
-      {/* Transactions List - Conditionally Rendered */}
+      {/* Transactions List */}
       {showTransactions && (
         <>
           <div className="transactions-list">
@@ -238,10 +239,10 @@ function BankFidget({
                       </span>
                     </div>
                     <div className="transaction-amount">
-                      <span>${t.amount.toFixed(2)}</span>
+                      <span>${(t.amount || 0).toFixed(2)}</span>
                       <button 
                         className="delete-btn"
-                        onClick={() => onDeleteTransaction(t.id)}
+                        onClick={() => onDeleteTransaction && onDeleteTransaction(t.id)}
                       >
                         ✕
                       </button>

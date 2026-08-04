@@ -17,7 +17,6 @@ db.version(4).stores({
   userProfile: "++id, name, email, avatar, currency"
 });
 
-// 默认数据
 const defaultBanks = [
   { name: "Capital One", color: "#004977", icon: "🏦" },
   { name: "Chase", color: "#117ACA", icon: "💳" },
@@ -43,13 +42,11 @@ function App() {
   useEffect(() => {
     const initData = async () => {
       try {
-        // 检查是否有银行数据
         const bankCount = await db.banks.count();
         if (bankCount === 0) {
           await db.banks.bulkAdd(defaultBanks);
           await db.accounts.bulkAdd(defaultAccounts);
           
-          // 添加示例订阅
           await db.subscriptions.bulkAdd([
             {
               name: "Netflix",
@@ -71,7 +68,6 @@ function App() {
             }
           ]);
           
-          // 创建用户资料
           await db.userProfile.add({
             name: "User",
             email: "",
@@ -81,7 +77,6 @@ function App() {
           });
         }
 
-        // 加载所有数据
         const allBanks = await db.banks.toArray();
         const allAccounts = await db.accounts.toArray();
         const allTransactions = await db.transactions.toArray();
@@ -103,9 +98,70 @@ function App() {
     initData();
   }, []);
 
-  // ... 所有 CRUD 函数保持不变 ...
+  // ------------------ 补充缺失的数据库 Handler ------------------
 
-  // 添加这些新的函数
+  const addTransaction = async (txn) => {
+    try {
+      const id = await db.transactions.add(txn);
+      setTransactions(prev => [...prev, { ...txn, id }]);
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+    }
+  };
+
+  const deleteTransaction = async (id) => {
+    try {
+      await db.transactions.delete(id);
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    }
+  };
+
+  const changeBankColor = async (bankId, color) => {
+    try {
+      await db.banks.update(bankId, { color });
+      setBanks(prev => prev.map(b => b.id === bankId ? { ...b, color } : b));
+    } catch (error) {
+      console.error("Error updating bank color:", error);
+    }
+  };
+
+  const deleteBank = async (bankId) => {
+    try {
+      await db.banks.delete(bankId);
+      // 同时清理绑定的账户
+      const relatedAccounts = accounts.filter(a => a.bankId === bankId);
+      for (let acc of relatedAccounts) {
+        await db.accounts.delete(acc.id);
+      }
+      setBanks(prev => prev.filter(b => b.id !== bankId));
+      setAccounts(prev => prev.filter(a => a.bankId !== bankId));
+    } catch (error) {
+      console.error("Error deleting bank:", error);
+    }
+  };
+
+  const addAccount = async (account) => {
+    try {
+      const id = await db.accounts.add(account);
+      setAccounts(prev => [...prev, { ...account, id }]);
+    } catch (error) {
+      console.error("Error adding account:", error);
+    }
+  };
+
+  const deleteAccount = async (accountId) => {
+    try {
+      await db.accounts.delete(accountId);
+      setAccounts(prev => prev.filter(a => a.id !== accountId));
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  };
+
+  // ------------------ 订阅与 Profile 逻辑 ------------------
+
   const addSubscription = async (subscription) => {
     try {
       const id = await db.subscriptions.add(subscription);
@@ -150,13 +206,10 @@ function App() {
     }
   };
 
-  // ... 其他函数 (getAccountsByBank, addTransaction, deleteTransaction, changeBankColor, deleteBank, addAccount, deleteAccount, addNewBank) ...
-
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
 
-  // 渲染不同的页面
   const renderContent = () => {
     switch(activeTab) {
       case 'dashboard':
