@@ -14,26 +14,31 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
   }, [transactions, accounts, subscriptions]);
 
   const calculateFinances = () => {
-    // ✅ 计算总存款（所有账户余额之和，包括交易）
-    const savings = accounts.reduce((sum, acc) => {
-      // 计算账户的交易总额
+    // ✅ Total Savings - 只计算非债务账户 (checking, savings, investment)
+    // 排除 credit 和 loan 类型
+    const savingsAccounts = accounts.filter(acc => 
+      acc.type !== 'credit' && acc.type !== 'loan'
+    );
+    
+    const savings = savingsAccounts.reduce((sum, acc) => {
       const accountTransactions = transactions.filter(t => t.accountId === acc.id);
       const transactionTotal = accountTransactions.reduce((s, t) => s + (t.amount || 0), 0);
-      // 余额 = 初始余额 + 交易总额
       const currentBalance = (acc.balance || 0) + transactionTotal;
       return sum + currentBalance;
     }, 0);
     setTotalSavings(savings);
 
-    // 计算欠款（Credit Card 和 Loan 类型的账户）
-    const debt = accounts
-      .filter(acc => acc.type === 'credit' || acc.type === 'loan')
-      .reduce((sum, acc) => {
-        const accountTransactions = transactions.filter(t => t.accountId === acc.id);
-        const transactionTotal = accountTransactions.reduce((s, t) => s + (t.amount || 0), 0);
-        const currentBalance = (acc.balance || 0) + transactionTotal;
-        return sum + Math.abs(currentBalance); // 取绝对值显示欠款
-      }, 0);
+    // ✅ Total Debt - 只计算债务账户 (credit, loan)
+    const debtAccounts = accounts.filter(acc => 
+      acc.type === 'credit' || acc.type === 'loan'
+    );
+    
+    const debt = debtAccounts.reduce((sum, acc) => {
+      const accountTransactions = transactions.filter(t => t.accountId === acc.id);
+      const transactionTotal = accountTransactions.reduce((s, t) => s + (t.amount || 0), 0);
+      const currentBalance = (acc.balance || 0) + transactionTotal;
+      return sum + Math.abs(currentBalance);
+    }, 0);
     setTotalDebt(debt);
 
     // 本月收入和支出
@@ -41,16 +46,16 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     
     const monthlyTxns = transactions.filter(t => 
-      new Date(t.date) >= monthStart && t.amount > 0
+      new Date(t.date) >= monthStart
     );
 
     const income = monthlyTxns
       .filter(t => t.category === 'Income' || t.category === 'Salary' || t.category === '收入')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
     
     const expenses = monthlyTxns
       .filter(t => t.category !== 'Income' && t.category !== 'Salary' && t.category !== '收入')
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
 
     setMonthlyIncome(income);
     setMonthlyExpenses(expenses);
@@ -91,7 +96,7 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
         )}
       </div>
 
-      {/* Summary Cards - 移除 Net Worth */}
+      {/* Summary Cards */}
       <div className="summary-cards">
         <div className="summary-card total-savings">
           <div className="card-icon">💰</div>
