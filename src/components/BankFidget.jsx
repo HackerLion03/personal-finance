@@ -65,8 +65,19 @@ function BankFidget({
     loan: '💰 Loan'
   };
 
+  // 在组件内部，return 之前添加
+const bankStyle = {
+  '--bank-color': bank.color
+};
+
   return (
-    <div className="bank-fidget" style={{ borderColor: bank.color }}>
+    <div 
+  className="bank-fidget" 
+  style={{ 
+    borderColor: bank.color,
+    '--bank-color': bank.color 
+  }}
+>
       {/* Bank Header */}
       <div className="bank-header" style={{ backgroundColor: bank.color }}>
         <div className="bank-title">
