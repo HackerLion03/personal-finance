@@ -9,7 +9,7 @@ import "./App.css";
 
 // 初始化数据库
 const db = new Dexie("FinanceDB");
-db.version(4).stores({
+db.version(1).stores({
   transactions: "++id, date, amount, category, description, bankId, accountId, accountType, isRecurring",
   banks: "++id, name, color, icon",
   accounts: "++id, bankId, name, type, balance, color",
@@ -17,6 +17,7 @@ db.version(4).stores({
   userProfile: "++id, name, email, avatar, currency"
 });
 
+// 默认数据
 const defaultBanks = [
   { name: "Capital One", color: "#004977", icon: "🏦" },
   { name: "Chase", color: "#117ACA", icon: "💳" },
@@ -38,7 +39,7 @@ function App() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 初始化数据
+  // ===== 初始化数据 =====
   useEffect(() => {
     const initData = async () => {
       try {
@@ -98,17 +99,25 @@ function App() {
     initData();
   }, []);
 
-  // ------------------ 补充缺失的数据库 Handler ------------------
+  // ===== CRUD Functions =====
 
-  const addTransaction = async (txn) => {
+  // 获取某个银行的账户
+  const getAccountsByBank = (bankId) => {
+    return accounts.filter(a => a.bankId === bankId);
+  };
+
+  // 添加交易
+  const addTransaction = async (transaction) => {
     try {
-      const id = await db.transactions.add(txn);
-      setTransactions(prev => [...prev, { ...txn, id }]);
+      const id = await db.transactions.add(transaction);
+      const newTransaction = { ...transaction, id };
+      setTransactions(prev => [...prev, newTransaction]);
     } catch (error) {
       console.error("Error adding transaction:", error);
     }
   };
 
+  // 删除交易
   const deleteTransaction = async (id) => {
     try {
       await db.transactions.delete(id);
@@ -118,30 +127,35 @@ function App() {
     }
   };
 
-  const changeBankColor = async (bankId, color) => {
+  // 修改银行颜色
+  const changeBankColor = async (bankId, newColor) => {
     try {
-      await db.banks.update(bankId, { color });
-      setBanks(prev => prev.map(b => b.id === bankId ? { ...b, color } : b));
+      await db.banks.update(bankId, { color: newColor });
+      setBanks(prev => prev.map(b => 
+        b.id === bankId ? { ...b, color: newColor } : b
+      ));
     } catch (error) {
       console.error("Error updating bank color:", error);
     }
   };
 
+  // 删除银行
   const deleteBank = async (bankId) => {
     try {
+      const bankAccounts = accounts.filter(a => a.bankId === bankId);
+      const accountIds = bankAccounts.map(a => a.id);
+      await db.transactions.where('accountId').anyOf(accountIds).delete();
+      await db.accounts.where('bankId').equals(bankId).delete();
       await db.banks.delete(bankId);
-      // 同时清理绑定的账户
-      const relatedAccounts = accounts.filter(a => a.bankId === bankId);
-      for (let acc of relatedAccounts) {
-        await db.accounts.delete(acc.id);
-      }
       setBanks(prev => prev.filter(b => b.id !== bankId));
       setAccounts(prev => prev.filter(a => a.bankId !== bankId));
+      setTransactions(prev => prev.filter(t => !accountIds.includes(t.accountId)));
     } catch (error) {
       console.error("Error deleting bank:", error);
     }
   };
 
+  // ✅ 添加账户（包括 Bank 和 Debt 账户）
   const addAccount = async (account) => {
     try {
       const id = await db.accounts.add(account);
@@ -151,17 +165,74 @@ function App() {
     }
   };
 
+  // 删除账户
   const deleteAccount = async (accountId) => {
     try {
+      await db.transactions.where('accountId').equals(accountId).delete();
       await db.accounts.delete(accountId);
       setAccounts(prev => prev.filter(a => a.id !== accountId));
+      setTransactions(prev => prev.filter(t => t.accountId !== accountId));
     } catch (error) {
       console.error("Error deleting account:", error);
     }
   };
 
-  // ------------------ 订阅与 Profile 逻辑 ------------------
+  // ✅ 添加新银行
+  const addNewBank = async () => {
+    const name = prompt("Enter bank name:");
+    if (name) {
+      const newBank = {
+        name,
+        color: "#" + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+        icon: "🏦"
+      };
+      try {
+        const id = await db.banks.add(newBank);
+        setBanks(prev => [...prev, { ...newBank, id }]);
+      } catch (error) {
+        console.error("Error adding bank:", error);
+      }
+    }
+  };
 
+  // ✅ 添加债务账户
+  const addDebtAccount = async () => {
+    const name = prompt("Enter debt account name (e.g., Student Loan, Mortgage):");
+    if (name) {
+      const bankName = prompt("Which bank does this debt belong to? (or type 'Other' if not listed)");
+      let bankId;
+      
+      // 查找或创建银行
+      const existingBank = banks.find(b => b.name.toLowerCase() === bankName.toLowerCase());
+      if (existingBank) {
+        bankId = existingBank.id;
+      } else {
+        // 创建新银行
+        const newBank = {
+          name: bankName,
+          color: "#dc3545",
+          icon: "💰"
+        };
+        const id = await db.banks.add(newBank);
+        setBanks(prev => [...prev, { ...newBank, id }]);
+        bankId = id;
+      }
+
+      const amount = parseFloat(prompt("Enter the debt amount:"));
+      if (!isNaN(amount)) {
+        const newAccount = {
+          bankId: bankId,
+          name: name,
+          type: 'loan', // 或 'credit'
+          balance: -Math.abs(amount), // 负数表示欠款
+          color: "#dc3545"
+        };
+        await addAccount(newAccount);
+      }
+    }
+  };
+
+  // 订阅管理
   const addSubscription = async (subscription) => {
     try {
       const id = await db.subscriptions.add(subscription);
@@ -192,6 +263,7 @@ function App() {
     }
   };
 
+  // 更新个人资料
   const updateProfile = async (profileData) => {
     try {
       if (userProfile) {
@@ -210,6 +282,7 @@ function App() {
     return <div className="loading">Loading...</div>;
   }
 
+  // ===== 渲染不同页面 =====
   const renderContent = () => {
     switch(activeTab) {
       case 'dashboard':
@@ -223,21 +296,34 @@ function App() {
         );
       case 'banks':
         return (
-          <div className="bank-fidgets-container">
-            {banks.map(bank => (
-              <BankFidget
-                key={bank.id}
-                bank={bank}
-                accounts={accounts.filter(a => a.bankId === bank.id)}
-                transactions={transactions}
-                onAddTransaction={addTransaction}
-                onDeleteTransaction={deleteTransaction}
-                onColorChange={changeBankColor}
-                onDeleteBank={deleteBank}
-                onAddAccount={addAccount}
-                onDeleteAccount={deleteAccount}
-              />
-            ))}
+          <div className="bank-page">
+            <div className="bank-page-header">
+              <h1>🏦 Banks & Accounts</h1>
+              <div className="bank-actions-header">
+                <button className="add-bank-btn" onClick={addNewBank}>
+                  + Add Bank
+                </button>
+                <button className="add-debt-btn" onClick={addDebtAccount}>
+                  + Add Debt Account
+                </button>
+              </div>
+            </div>
+            <div className="bank-fidgets-container">
+              {banks.map(bank => (
+                <BankFidget
+                  key={bank.id}
+                  bank={bank}
+                  accounts={getAccountsByBank(bank.id)}
+                  transactions={transactions}
+                  onAddTransaction={addTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                  onColorChange={changeBankColor}
+                  onDeleteBank={deleteBank}
+                  onAddAccount={addAccount}
+                  onDeleteAccount={deleteAccount}
+                />
+              ))}
+            </div>
           </div>
         );
       case 'subscriptions':

@@ -43,3 +43,87 @@ body {
   max-width: 1440px;
   margin: 0 auto;
 }
+
+/* ===== Bank Page Header ===== */
+.bank-page {
+  padding: 20px 40px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.bank-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bank-page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.bank-actions-header {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.add-bank-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.add-bank-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+.add-debt-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.add-debt-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(220, 53, 69, 0.4);
+}
+
+@media (max-width: 768px) {
+  .bank-page {
+    padding: 16px;
+  }
+  
+  .bank-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .bank-actions-header {
+    flex-direction: column;
+  }
+  
+  .add-bank-btn,
+  .add-debt-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

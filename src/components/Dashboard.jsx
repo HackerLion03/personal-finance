@@ -4,7 +4,6 @@ import './Dashboard.css';
 function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
   const [totalSavings, setTotalSavings] = useState(0);
   const [totalDebt, setTotalDebt] = useState(0);
-  const [netWorth, setNetWorth] = useState(0);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);
   const [upcomingBills, setUpcomingBills] = useState([]);
@@ -15,18 +14,27 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
   }, [transactions, accounts, subscriptions]);
 
   const calculateFinances = () => {
-    // 计算总存款（所有账户余额之和）
-    const savings = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+    // ✅ 计算总存款（所有账户余额之和，包括交易）
+    const savings = accounts.reduce((sum, acc) => {
+      // 计算账户的交易总额
+      const accountTransactions = transactions.filter(t => t.accountId === acc.id);
+      const transactionTotal = accountTransactions.reduce((s, t) => s + (t.amount || 0), 0);
+      // 余额 = 初始余额 + 交易总额
+      const currentBalance = (acc.balance || 0) + transactionTotal;
+      return sum + currentBalance;
+    }, 0);
     setTotalSavings(savings);
 
     // 计算欠款（Credit Card 和 Loan 类型的账户）
     const debt = accounts
       .filter(acc => acc.type === 'credit' || acc.type === 'loan')
-      .reduce((sum, acc) => sum + acc.balance, 0);
+      .reduce((sum, acc) => {
+        const accountTransactions = transactions.filter(t => t.accountId === acc.id);
+        const transactionTotal = accountTransactions.reduce((s, t) => s + (t.amount || 0), 0);
+        const currentBalance = (acc.balance || 0) + transactionTotal;
+        return sum + Math.abs(currentBalance); // 取绝对值显示欠款
+      }, 0);
     setTotalDebt(debt);
-
-    // 净资产
-    setNetWorth(savings - debt);
 
     // 本月收入和支出
     const now = new Date();
@@ -37,11 +45,11 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
     );
 
     const income = monthlyTxns
-      .filter(t => t.category === 'Income' || t.category === 'Salary')
+      .filter(t => t.category === 'Income' || t.category === 'Salary' || t.category === '收入')
       .reduce((sum, t) => sum + t.amount, 0);
     
     const expenses = monthlyTxns
-      .filter(t => t.category !== 'Income' && t.category !== 'Salary')
+      .filter(t => t.category !== 'Income' && t.category !== 'Salary' && t.category !== '收入')
       .reduce((sum, t) => sum + t.amount, 0);
 
     setMonthlyIncome(income);
@@ -83,7 +91,7 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
         )}
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - 移除 Net Worth */}
       <div className="summary-cards">
         <div className="summary-card total-savings">
           <div className="card-icon">💰</div>
@@ -99,15 +107,6 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
             <span className="card-value">${totalDebt.toFixed(2)}</span>
           </div>
         </div>
-        <div className="summary-card net-worth">
-          <div className="card-icon">📈</div>
-          <div className="card-content">
-            <span className="card-label">Net Worth</span>
-            <span className="card-value" style={{ color: netWorth >= 0 ? '#28a745' : '#dc3545' }}>
-              ${netWorth.toFixed(2)}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Monthly Overview */}
@@ -115,12 +114,10 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
         <div className="overview-card income">
           <span className="overview-label">Monthly Income</span>
           <span className="overview-value">${monthlyIncome.toFixed(2)}</span>
-          <div className="overview-trend positive">↑ +2.5%</div>
         </div>
         <div className="overview-card expenses">
           <span className="overview-label">Monthly Expenses</span>
           <span className="overview-value">${monthlyExpenses.toFixed(2)}</span>
-          <div className="overview-trend negative">↓ -1.2%</div>
         </div>
         <div className="overview-card savings-rate">
           <span className="overview-label">Savings Rate</span>
@@ -186,15 +183,6 @@ function Dashboard({ transactions, accounts, subscriptions, userProfile }) {
         <div className="stat-item">
           <span className="stat-label">Total Transactions</span>
           <span className="stat-value">{transactions.length}</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">Monthly Average</span>
-          <span className="stat-value">
-            ${transactions.length > 0 
-              ? (transactions.reduce((sum, t) => sum + t.amount, 0) / 12).toFixed(2)
-              : '0.00'
-            }
-          </span>
         </div>
       </div>
     </div>
