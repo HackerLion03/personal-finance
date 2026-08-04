@@ -78,10 +78,13 @@ function BankFidget({
 
   // 计算账户余额（初始余额 + 交易）
   const getAccountBalance = (account) => {
-    const accountTransactions = getAccountTransactions(account.id);
+    const accountTransactions = transactions.filter(t => t.accountId === account.id);
     const transactionTotal = accountTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
     return (account.balance || 0) + transactionTotal;
   };
+
+  // ✅ 修正：总余额 = 所有账户的当前余额之和
+  const totalBalance = accounts.reduce((sum, acc) => sum + getAccountBalance(acc), 0);
 
   // 切换账户展开/收起
   const toggleAccount = (accountId) => {
