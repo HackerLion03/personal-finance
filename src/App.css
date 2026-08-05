@@ -1,5 +1,4 @@
-/* ===== App 全局样式 ===== */
-
+/* ===== 全局重置 ===== */
 * {
   margin: 0;
   padding: 0;
@@ -8,171 +7,488 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #f0f2f5;
+  color: #1a1a2e;
   min-height: 100vh;
 }
 
-.App {
-  min-height: 100vh;
-}
-
-.app-content {
-  padding: 20px 0;
-}
-
-/* 加载动画 */
-.loading {
+/* ===== 加载屏幕 ===== */
+.loading-screen {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   font-size: 24px;
   color: #667eea;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ===== App 容器 ===== */
+.App {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 80px;
+  min-height: 100vh;
+}
+
+/* ===== 顶部导航 ===== */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav-title {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* ===== Bank Page ===== */
-.bank-page {
-  padding: 20px 40px;
-  max-width: 1440px;
-  margin: 0 auto;
+.nav-actions {
+  display: flex;
+  gap: 8px;
 }
 
-.bank-page-header {
+.lang-btn {
+  background: #e8ecf1;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn:hover {
+  background: #d5dbe3;
+}
+
+.add-txn-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-txn-btn:hover {
+  transform: scale(1.05);
+}
+
+/* ===== 净资产卡片 ===== */
+.net-worth-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.nw-row {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+.nw-item {
+  flex: 1;
+}
+
+.nw-label {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.nw-value {
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.nw-item.green .nw-value { color: #28a745; }
+.nw-item.red .nw-value { color: #dc3545; }
+
+/* ===== 标签切换 ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: white;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== 内容区 ===== */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard h3,
+.banks-page h3,
+.subscriptions-page h3,
+.profile-page h3 {
+  font-size: 18px;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+/* ===== 区块 ===== */
+.section {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.section h4 {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
-.bank-page-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
+.section-header h3 {
   margin: 0;
 }
 
-.bank-actions-header {
+.header-btns {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.add-bank-btn {
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* ===== 账户行 ===== */
+.acc-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: #f8f9fa;
+  gap: 10px;
+}
+
+.acc-row-icon {
+  font-size: 20px;
+}
+
+.acc-row-info {
+  flex: 1;
+}
+
+.acc-row-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.acc-row-bank {
+  font-size: 12px;
+  color: #999;
+}
+
+.acc-row-balance {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.acc-row-balance.green { color: #28a745; }
+.acc-row-balance.red { color: #dc3545; }
+
+/* ===== 交易行 ===== */
+.txn-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 10px;
+}
+
+.txn-row:last-child {
+  border-bottom: none;
+}
+
+.txn-icon {
+  font-size: 18px;
+}
+
+.txn-info {
+  flex: 1;
+}
+
+.txn-desc {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.txn-meta {
+  font-size: 11px;
+  color: #999;
+}
+
+.txn-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.txn-amount {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.txn-amount.green { color: #28a745; }
+.txn-amount.red { color: #dc3545; }
+
+/* ===== 银行卡片 ===== */
+.bank-card {
+  background: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.bank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+}
+
+.acc-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.acc-sub-row .green { color: #28a745; }
+.acc-sub-row .red { color: #dc3545; }
+
+/* ===== 按钮 ===== */
+.btn-sm {
+  padding: 6px 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.2s;
 }
 
-.add-bank-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
-}
+.btn-blue { background: #667eea; color: white; }
+.btn-blue:hover { background: #5a6fd6; }
 
-.add-debt-btn {
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
-  color: white;
+.btn-green { background: #28a745; color: white; }
+.btn-green:hover { background: #218838; }
+
+.btn-gray { background: #e8ecf1; color: #666; }
+.btn-gray:hover { background: #d5dbe3; }
+
+.btn-delete {
+  background: none;
   border: none;
-  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.2s;
+  padding: 0 4px;
+}
+
+.btn-delete:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ===== Modal 弹窗 ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.modal label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 12px 0 4px;
+}
+
+.modal input,
+.modal select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e8ecf1;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border 0.2s;
+}
+
+.modal input:focus,
+.modal select:focus {
+  border-color: #667eea;
+  outline: none;
+}
+
+.type-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.type-btns button {
+  flex: 1;
+  padding: 8px;
+  border: 2px solid #e8ecf1;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.type-btns button.active.red { border-color: #dc3545; background: #fff5f5; }
+.type-btns button.active.green { border-color: #28a745; background: #f0fff4; }
+.type-btns button.active.blue { border-color: #667eea; background: #f0f3ff; }
+
+.modal-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.modal-btns button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  transition: all 0.2s;
 }
 
-.add-debt-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(220, 53, 69, 0.4);
+.modal-btns .btn-gray { background: #e8ecf1; color: #666; }
+.modal-btns .btn-blue { background: #667eea; color: white; }
+
+.modal-btns .btn-gray:hover { background: #d5dbe3; }
+.modal-btns .btn-blue:hover { background: #5a6fd6; }
+
+/* ===== 设置页 ===== */
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* ===== Bank Fidgets Container ===== */
-.bank-fidgets-container {
+.setting-row {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  padding: 0;
-  gap: 20px;
-  max-width: 1440px;
-  margin: 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-/* ============================================ */
-/* ===== 桌面端默认样式 (已在上方定义) ===== */
-/* ============================================ */
-
-/* ===== 平板端 (768px 以下) ===== */
-@media (max-width: 768px) {
-  .bank-page {
-    padding: 16px 16px;
-  }
-
-  .bank-page-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .bank-page-header h1 {
-    font-size: 22px;
-    text-align: center;
-  }
-
-  .bank-actions-header {
-    flex-direction: row;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .bank-actions-header button {
-    flex: 1;
-    text-align: center;
-    font-size: 13px;
-    padding: 8px 16px;
-    min-width: 0;
-  }
-
-  .bank-fidgets-container {
-    justify-content: center;
-    gap: 16px;
-    padding: 0;
-  }
+.setting-row:last-child {
+  border-bottom: none;
 }
 
-/* ===== 小屏手机 (400px 以下) ===== */
-@media (max-width: 400px) {
-  .bank-page {
-    padding: 12px 8px;
-  }
+/* ===== 滚动条美化 ===== */
+::-webkit-scrollbar {
+  width: 4px;
+}
 
-  .bank-page-header h1 {
-    font-size: 18px;
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .bank-actions-header {
-    flex-direction: column;
-    gap: 8px;
-  }
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
 
-  .bank-actions-header button {
-    font-size: 12px;
-    padding: 8px 12px;
-    width: 100%;
+/* ===== 响应式 ===== */
+@media (max-width: 480px) {
+  .App {
+    padding: 12px 12px 80px;
   }
-
-  .bank-fidgets-container {
-    gap: 12px;
-    padding: 0;
+  
+  .nw-value {
+    font-size: 16px;
+  }
+  
+  .modal {
+    padding: 20px;
+    margin: 10px;
   }
 }
