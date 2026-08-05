@@ -12,11 +12,13 @@ db.version(1).stores({
   userProfile: "++id, name, email, avatar, currency, language"
 });
 
-// ========== 默认数据 ==========
+// ========== 默认数据（你的真实账户） ==========
 const defaultBanks = [
   { name: "Capital One", color: "#004977", icon: "🏦" },
   { name: "Citizen Bank", color: "#117ACA", icon: "🏛️" },
   { name: "PayPal", color: "#004B87", icon: "🅿️" },
+  { name: "学生贷款", color: "#dc3545", icon: "🎓" },
+  { name: "现金", color: "#28a745", icon: "💵" },
 ];
 
 const defaultAccounts = [
@@ -24,6 +26,8 @@ const defaultAccounts = [
   { bankId: 1, name: "Capital One 副卡", type: "credit", balance: -200, color: "#dc3545" },
   { bankId: 2, name: "Citizen Checking", type: "checking", balance: 2500, color: "#28a745" },
   { bankId: 3, name: "PayPal 余额", type: "checking", balance: 300, color: "#17a2b8" },
+  { bankId: 4, name: "联邦学生贷款", type: "loan", balance: -15000, color: "#dc3545" },
+  { bankId: 5, name: "钱包现金", type: "cash", balance: 150, color: "#28a745" },
 ];
 
 // ========== 中英文翻译 ==========
@@ -83,6 +87,19 @@ const zh = {
   weekly: "每周",
   active: "活跃",
   inactive: "已暂停",
+  recentTransactions: "最近交易",
+  accountOverview: "账户概览",
+  netWorthOverview: "净资产总览",
+  addNewBank: "添加新银行",
+  addNewAccount: "添加新账户",
+  switchToEnglish: "切换到 English",
+  switchToChinese: "切换为 中文",
+  selectAccount: "选择账户",
+  selectBank: "请选择银行",
+  enterBankName: "请输入银行名称",
+  enterAccountName: "如：储蓄账户",
+  enterDescription: "如：超市购物",
+  subscriptionComingSoon: "订阅功能开发中...",
 };
 
 const en = {
@@ -141,6 +158,19 @@ const en = {
   weekly: "Weekly",
   active: "Active",
   inactive: "Inactive",
+  recentTransactions: "Recent Transactions",
+  accountOverview: "Account Overview",
+  netWorthOverview: "Net Worth Overview",
+  addNewBank: "Add New Bank",
+  addNewAccount: "Add New Account",
+  switchToEnglish: "Switch to English",
+  switchToChinese: "切换为 中文",
+  selectAccount: "Select Account",
+  selectBank: "Select Bank",
+  enterBankName: "Enter Bank Name",
+  enterAccountName: "e.g. Savings Account",
+  enterDescription: "e.g. Grocery",
+  subscriptionComingSoon: "Subscription feature coming soon...",
 };
 
 function App() {
@@ -151,7 +181,7 @@ function App() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('zh'); // 默认中文
+  const [language, setLanguage] = useState('zh');
   const [showAddTxn, setShowAddTxn] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
 
@@ -199,28 +229,25 @@ function App() {
   // ========== 获取账户所属银行 ==========
   const getAccountsByBank = (bankId) => accounts.filter(a => a.bankId === bankId);
 
-  // ========== 添加交易（修复版：正确区分收入/支出） ==========
+  // ========== 添加交易 ==========
   const addTransaction = async (transaction) => {
     try {
       const { accountId, amount, type } = transaction;
       const account = accounts.find(a => a.id === accountId);
       if (!account) return;
 
-      // 🔥 关键修复：根据类型更新余额
       let balanceChange = 0;
       if (type === 'income') {
-        balanceChange = Math.abs(amount); // 收入增加余额
+        balanceChange = Math.abs(amount);
       } else if (type === 'expense') {
-        balanceChange = -Math.abs(amount); // 支出减少余额
+        balanceChange = -Math.abs(amount);
       } else if (type === 'repayment') {
-        balanceChange = Math.abs(amount); // 还款增加余额（减少欠款）
+        balanceChange = Math.abs(amount);
       }
 
-      // 更新账户余额
       const newBalance = (account.balance || 0) + balanceChange;
       await db.accounts.update(accountId, { balance: newBalance });
 
-      // 保存交易记录
       const txnData = {
         ...transaction,
         amount: type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
@@ -231,6 +258,7 @@ function App() {
       
       setTransactions(prev => [{ ...txnData, id }, ...prev]);
       setAccounts(prev => prev.map(a => a.id === accountId ? { ...a, balance: newBalance } : a));
+      setShowAddTxn(false);
     } catch (error) {
       console.error("添加交易失败:", error);
     }
@@ -244,7 +272,6 @@ function App() {
 
       const account = accounts.find(a => a.id === txn.accountId);
       if (account) {
-        // 恢复余额
         const newBalance = (account.balance || 0) - txn.amount;
         await db.accounts.update(account.id, { balance: newBalance });
         setAccounts(prev => prev.map(a => a.id === account.id ? { ...a, balance: newBalance } : a));
@@ -388,65 +415,71 @@ function App() {
 
       {/* 内容区 */}
       <div className="content">
-        {/* 仪表盘 */}
         {activeTab === 'dashboard' && (
           <div className="dashboard">
-            <h3>📊 {t.dashboard}</h3>
-            
-            {/* 账户概览 */}
             <div className="section">
-              <h4>🏦 {t.banks}</h4>
-              {accounts.map(acc => {
-                const bank = banks.find(b => b.id === acc.bankId);
-                return (
-                  <div key={acc.id} className="acc-row" style={{ borderLeft: `4px solid ${acc.color || '#ccc'}` }}>
-                    <span className="acc-row-icon">{bank?.icon || '💰'}</span>
-                    <div className="acc-row-info">
-                      <div className="acc-row-name">{acc.name}</div>
-                      <div className="acc-row-bank">{bank?.name}</div>
+              <h4>🏦 {t.accountOverview}</h4>
+              {accounts.length === 0 ? (
+                <div className="empty-hint">{t.noData}</div>
+              ) : (
+                accounts.map(acc => {
+                  const bank = banks.find(b => b.id === acc.bankId);
+                  return (
+                    <div key={acc.id} className="acc-row" style={{ borderLeft: `4px solid ${acc.color || '#ccc'}` }}>
+                      <span className="acc-row-icon">{bank?.icon || '💰'}</span>
+                      <div className="acc-row-info">
+                        <div className="acc-row-name">{acc.name}</div>
+                        <div className="acc-row-bank">{bank?.name}</div>
+                      </div>
+                      <div className={`acc-row-balance ${(acc.balance || 0) >= 0 ? 'green' : 'red'}`}>
+                        {fmt(acc.balance)}
+                      </div>
                     </div>
-                    <div className={`acc-row-balance ${acc.balance >= 0 ? 'green' : 'red'}`}>
-                      {fmt(acc.balance)}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
-            {/* 最近交易 */}
             <div className="section">
-              <h4>📋 {language === 'zh' ? '最近交易' : 'Recent Transactions'}</h4>
-              {transactions.slice(0, 20).map(txn => {
-                const acc = accounts.find(a => a.id === txn.accountId);
-                const bank = banks.find(b => b.id === acc?.bankId);
-                return (
-                  <div key={txn.id} className="txn-row">
-                    <span className="txn-icon">{txn.type === 'income' ? '📥' : txn.type === 'repayment' ? '💰' : '📤'}</span>
-                    <div className="txn-info">
-                      <div className="txn-desc">{txn.description}</div>
-                      <div className="txn-meta">{bank?.icon} {acc?.name} · {txn.date} · {txn.category}</div>
-                    </div>
-                    <div className="txn-right">
-                      <span className={`txn-amount ${txn.amount >= 0 ? 'green' : 'red'}`}>
-                        {txn.amount >= 0 ? '+' : '-'}{fmt(txn.amount)}
+              <h4>📋 {t.recentTransactions}</h4>
+              {transactions.length === 0 ? (
+                <div className="empty-hint">{t.noData}</div>
+              ) : (
+                transactions.slice(0, 20).map(txn => {
+                  const acc = accounts.find(a => a.id === txn.accountId);
+                  const bank = banks.find(b => b.id === acc?.bankId);
+                  return (
+                    <div key={txn.id} className="txn-row">
+                      <span className="txn-icon">
+                        {txn.type === 'income' ? '📥' : txn.type === 'repayment' ? '💰' : '📤'}
                       </span>
-                      <button className="btn-delete" onClick={() => deleteTransaction(txn.id)}>🗑️</button>
+                      <div className="txn-info">
+                        <div className="txn-desc">{txn.description}</div>
+                        <div className="txn-meta">
+                          {bank?.icon} {acc?.name} · {txn.date} · {txn.category}
+                        </div>
+                      </div>
+                      <div className="txn-right">
+                        <span className={`txn-amount ${(txn.amount || 0) >= 0 ? 'green' : 'red'}`}>
+                          {(txn.amount || 0) >= 0 ? '+' : '-'}{fmt(txn.amount)}
+                        </span>
+                        <button className="btn-delete" onClick={() => deleteTransaction(txn.id)}>🗑️</button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
 
-        {/* 银行账户页 */}
         {activeTab === 'banks' && (
           <div className="banks-page">
             <div className="section-header">
               <h3>🏦 {t.banks}</h3>
               <div className="header-btns">
                 <button onClick={() => {
-                  const name = prompt(language === 'zh' ? '银行名称：' : 'Bank name:');
+                  const name = prompt(t.enterBankName);
                   if (name) addBank({ name, color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'), icon: '🏦' });
                 }} className="btn-sm btn-blue">+ {t.addBank}</button>
                 <button onClick={() => setShowAddAccount(true)} className="btn-sm btn-green">+ {t.addAccount}</button>
@@ -461,36 +494,40 @@ function App() {
                     <span>{bank.icon} {bank.name}</span>
                     <button onClick={() => deleteBank(bank.id)} className="btn-delete">🗑️</button>
                   </div>
-                  {bankAccounts.map(acc => (
-                    <div key={acc.id} className="acc-sub-row">
-                      <span>{acc.name}</span>
-                      <span className={acc.balance >= 0 ? 'green' : 'red'}>{fmt(acc.balance)}</span>
-                      <button onClick={() => deleteAccount(acc.id)} className="btn-delete">🗑️</button>
-                    </div>
-                  ))}
+                  {bankAccounts.length === 0 ? (
+                    <div className="empty-hint" style={{padding: 20, color: '#999'}}>{t.noData}</div>
+                  ) : (
+                    bankAccounts.map(acc => (
+                      <div key={acc.id} className="acc-sub-row">
+                        <span>{acc.name}</span>
+                        <span className={(acc.balance || 0) >= 0 ? 'green' : 'red'}>{fmt(acc.balance)}</span>
+                        <button onClick={() => deleteAccount(acc.id)} className="btn-delete">🗑️</button>
+                      </div>
+                    ))
+                  )}
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* 订阅页 */}
         {activeTab === 'subscriptions' && (
           <div className="subscriptions-page">
             <h3>📅 {t.subscriptions}</h3>
-            <p style={{color:'#999', textAlign:'center', padding:40}}>{language === 'zh' ? '订阅功能开发中...' : 'Subscription feature in development...'}</p>
+            <p style={{color:'#999', textAlign:'center', padding:40}}>
+              {t.subscriptionComingSoon}
+            </p>
           </div>
         )}
 
-        {/* 设置页 */}
         {activeTab === 'profile' && (
           <div className="profile-page">
             <h3>⚙️ {t.profile}</h3>
             <div className="profile-card">
               <div className="setting-row">
                 <span>{t.language}</span>
-                <button onClick={toggleLanguage} className="btn-sm">
-                  {language === 'zh' ? '切换到 English' : 'Switch to 中文'}
+                <button onClick={toggleLanguage} className="btn-sm btn-blue">
+                  {language === 'zh' ? t.switchToEnglish : t.switchToChinese}
                 </button>
               </div>
             </div>
@@ -498,7 +535,6 @@ function App() {
         )}
       </div>
 
-      {/* 添加交易弹窗 */}
       {showAddTxn && (
         <AddTransactionModal
           accounts={accounts}
@@ -510,7 +546,6 @@ function App() {
         />
       )}
 
-      {/* 添加账户弹窗 */}
       {showAddAccount && (
         <AddAccountModal
           banks={banks}
@@ -550,6 +585,7 @@ function AddTransactionModal({ accounts, banks, t, language, onSave, onClose }) 
       category,
       date,
     });
+    onClose();
   };
 
   return (
@@ -570,12 +606,12 @@ function AddTransactionModal({ accounts, banks, t, language, onSave, onClose }) 
           </button>
         </div>
 
-        <label>{language === 'zh' ? '账户' : 'Account'}</label>
+        <label>{t.selectAccount}</label>
         <select value={accountId} onChange={e => setAccountId(e.target.value)}>
-          <option value="">{language === 'zh' ? '请选择' : 'Select'}</option>
+          <option value="">{t.selectAccount}</option>
           {accounts.map(acc => {
             const bank = banks.find(b => b.id === acc.bankId);
-            return <option key={acc.id} value={acc.id}>{bank?.icon} {acc.name}</option>;
+            return <option key={acc.id} value={acc.id}>{bank?.icon} {acc.name} ({fmt(acc.balance)})</option>;
           })}
         </select>
 
@@ -583,7 +619,7 @@ function AddTransactionModal({ accounts, banks, t, language, onSave, onClose }) 
         <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" step="0.01" />
 
         <label>{t.description}</label>
-        <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder={language === 'zh' ? '如：超市购物' : 'e.g. Grocery'} />
+        <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder={t.enterDescription} />
 
         <label>{t.category}</label>
         <select value={category} onChange={e => setCategory(e.target.value)}>
@@ -624,6 +660,7 @@ function AddAccountModal({ banks, t, language, onSave, onClose }) {
       creditLimit: isCredit ? (parseFloat(creditLimit) || 0) : null,
       color: isCredit ? '#dc3545' : '#28a745',
     });
+    onClose();
   };
 
   return (
@@ -633,12 +670,12 @@ function AddAccountModal({ banks, t, language, onSave, onClose }) {
         
         <label>{t.bank}</label>
         <select value={bankId} onChange={e => setBankId(e.target.value)}>
-          <option value="">{language === 'zh' ? '请选择银行' : 'Select Bank'}</option>
+          <option value="">{t.selectBank}</option>
           {banks.map(b => <option key={b.id} value={b.id}>{b.icon} {b.name}</option>)}
         </select>
 
         <label>{t.name}</label>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder={language === 'zh' ? '如：储蓄账户' : 'e.g. Savings'} />
+        <input value={name} onChange={e => setName(e.target.value)} placeholder={t.enterAccountName} />
 
         <label>{t.type}</label>
         <select value={type} onChange={e => setType(e.target.value)}>
@@ -666,6 +703,11 @@ function AddAccountModal({ banks, t, language, onSave, onClose }) {
       </div>
     </div>
   );
+}
+
+// 工具函数
+function fmt(n) {
+  return '$' + Math.abs(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
 }
 
 export default App;
